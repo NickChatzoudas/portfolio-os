@@ -24,6 +24,13 @@ function gridToFilename(px: number, py: number) {
   return `gaze_px${sanitize(px)}_py${sanitize(py)}_${SIZE}.webp`;
 }
 
+export type GazeTile = {
+  tileX: number; // 0..10
+  tileY: number; // 0..10
+  px: number;
+  py: number;
+};
+
 /**
  * Custom hook for gaze tracking
  * @param {React.RefObject} containerRef - Reference to the container element
@@ -34,9 +41,9 @@ export function useGazeTracking(
   containerRef: React.RefObject<HTMLElement | null>,
   basePath = "/faces/"
 ) {
-  const normalizedBasePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
+  void basePath; // basePath kept for API compatibility; atlas is addressed by the component.
 
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [tile, setTile] = useState<GazeTile | null>(null);
   const [isLoading] = useState(false);
   const [error] = useState<Error | null>(null);
 
@@ -61,13 +68,15 @@ export function useGazeTracking(
       const px = quantizeToGrid(clampedX);
       const py = quantizeToGrid(clampedY);
 
-      // Generate filename
-      const filename = gridToFilename(px, py);
-      const imagePath = `${normalizedBasePath}${filename}`;
+      const tileX = Math.round((px - P_MIN) / STEP);
+      const tileY = Math.round((py - P_MIN) / STEP);
 
-      setCurrentImage(imagePath);
+      // Keep filename generation logic around for parity/debugging.
+      void gridToFilename(px, py);
+
+      setTile({ tileX, tileY, px, py });
     },
-    [normalizedBasePath, containerRef]
+    [containerRef]
   );
 
   const handleMouseMove = useCallback(
@@ -109,7 +118,7 @@ export function useGazeTracking(
     };
   }, [handleMouseMove, handleTouchMove, updateGaze]);
 
-  return { currentImage, isLoading, error };
+  return { tile, isLoading, error };
 }
 
 export default useGazeTracking;

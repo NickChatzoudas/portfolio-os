@@ -1,15 +1,12 @@
 import React from 'react';
 import '98.css/dist/98.css';
+import FaceTracker from '../face-looker/FaceTracker';
 
 const AboutMe: React.FC = () => {
     return (
         <div className="about-me">
             <div className="field-row">
-                <img
-                    src="/me.png"
-                    alt="Profile"
-                    style={{ width: '150px', height: '150px', margin: '15px', borderRadius: '2px', border: '3px solid #000000' }}
-                />
+                <FaceTracker />
                 <div>
                     <h4 style={{ marginBottom: '10px' }}>Nick Chatzoudas</h4>
                     <p style={{ fontWeight: "bold" }}>Digital Systems Student</p>

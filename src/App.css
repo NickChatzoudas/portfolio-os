@@ -182,8 +182,7 @@ li {
   border: 1px solid #ffffff;
   box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
     inset -2px -2px grey, inset 2px 2px #fff;
-  resize: both;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .window.active {
@@ -193,6 +192,7 @@ li {
 .resize-handle {
   position: absolute;
   background: transparent;
+  z-index: 20;
 }
 
 .resize-handle.top {
@@ -263,8 +263,8 @@ li {
   margin: 0 !important;
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: auto;
-  height: 100%;
 }
 
 .window-body.dosbox {

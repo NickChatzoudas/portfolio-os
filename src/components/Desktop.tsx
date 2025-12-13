@@ -27,27 +27,27 @@ const apps: AppConfig[] = [
     {
         id: 'about-me',
         title: 'About Me',
-        icon: '/icon.png',
+        icon: '/icon.webp',
         component: 'AboutMe'
     },
     {
         id: 'pacman',
         title: 'PacMan',
-        icon: '/icons/Pacman.png',
+        icon: '/icons/Pacman.webp',
         component: 'DosBox',
         bundleUrl: '/roms/pacman.jsdos'
     },
     {
         id: 'solitaire',
         title: 'Solitaire',
-        icon: '/icons/Solitaire.png',
+        icon: '/icons/Solitaire.webp',
         component: 'DosBox',
         bundleUrl: '/roms/solitaire.jsdos'
     },
     {
         id: 'doom',
         title: 'Doom',
-        icon: '/icons/Doom.png',
+        icon: '/icons/Doom.webp',
         component: 'DosBox',
         bundleUrl: '/roms/doom.jsdos'
     }

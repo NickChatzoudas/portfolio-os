@@ -130,7 +130,7 @@ const Taskbar: React.FC<TaskbarProps> = ({ activeWindows, onWindowClick, apps, o
                     onClick={() => setIsStartOpen(!isStartOpen)}
                 >
                     <img
-                        src="/icons/windowsStartIcon.png"
+                        src="/icons/windowsStartIcon.webp"
                         alt="Start"
                         className="windows-logo"
                         style={{ width: '16px', height: '16px', marginRight: '4px' }}

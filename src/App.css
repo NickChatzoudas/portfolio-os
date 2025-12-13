@@ -53,7 +53,7 @@ li {
   transform: translate(-50%, -50%);
   width: 400px; /* adjust size as needed */
   height: 400px; /* adjust size as needed */
-  background-image: url("../public/wallpaper.png"); /* add your image to public folder */
+  background-image: url("/wallpaper.webp");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;

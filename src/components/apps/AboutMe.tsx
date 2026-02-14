@@ -6,7 +6,8 @@ const AboutMe: React.FC = () => {
     return (
         <div className="about-me">
             <div className="field-row">
-                <FaceTracker />
+                {/* <FaceTracker /> */}
+                <img src="/faces/hero.webp" alt="Profile Picture" className='face-tracker' />
                 <div>
                     <h4 style={{ marginBottom: '10px' }}>Nick Chatzoudas</h4>
                     <p style={{ fontWeight: "bold" }}>Digital Systems Student</p>

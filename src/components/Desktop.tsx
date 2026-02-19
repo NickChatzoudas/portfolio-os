@@ -36,14 +36,16 @@ const apps: AppConfig[] = [
         icon: '/icons/Pacman.webp',
         component: 'DosBox',
         bundleUrl: '/roms/pacman.jsdos'
-    },
-    {
-        id: 'solitaire',
-        title: 'Solitaire',
-        icon: '/icons/Solitaire.webp',
-        component: 'DosBox',
-        bundleUrl: '/roms/solitaire.jsdos'
-    },
+    }
+    ,
+    // {
+    //     id: 'solitaire',
+    //     title: 'Solitaire',
+    //     icon: '/icons/Solitaire.webp',
+    //     component: 'DosBox',
+    //     bundleUrl: '/roms/solitaire.jsdos'
+    // }
+    ,
     {
         id: 'doom',
         title: 'Doom',

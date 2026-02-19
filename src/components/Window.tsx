@@ -213,10 +213,10 @@ const Window: React.FC<WindowProps> = ({
                 y: position.y
             });
             setPosition({ x: 0, y: 0 });
-            // Adjust height to account for taskbar (28px)
+            // Adjust height to account for taskbar
             setSize({
                 width: window.innerWidth,
-                height: window.innerHeight - 40 // increased from 28 to 40 for padding
+                height: window.innerHeight - TASKBAR_HEIGHT
             });
         } else {
             setPosition({ x: prevSize.x, y: prevSize.y });

@@ -84,7 +84,9 @@ li {
   z-index: 9999;
   background-color: #c0c0c0;
   border-top: 1px solid #ffffff;
-  box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #0a0a0a;
+  box-shadow:
+    inset 1px 1px #dfdfdf,
+    inset -1px -1px #0a0a0a;
 }
 
 .start-button-container {
@@ -115,12 +117,16 @@ li {
   border-left: 1px solid #ffffff;
   border-right: 1px solid #404040;
   border-bottom: 1px solid #404040;
-  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff;
 }
 
 .start-button:active {
   border: 1px solid #404040;
-  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+  box-shadow:
+    inset 1px 1px #0a0a0a,
+    inset -1px -1px #fff;
   padding: 4px 7px 2px 9px;
 }
 
@@ -150,12 +156,16 @@ li {
   border-left: 1px solid #ffffff;
   border-right: 1px solid #404040;
   border-bottom: 1px solid #404040;
-  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff;
 }
 
 .window-button.active {
   border: 1px solid #404040;
-  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+  box-shadow:
+    inset 1px 1px #0a0a0a,
+    inset -1px -1px #fff;
 }
 
 .system-tray {
@@ -180,8 +190,11 @@ li {
   min-height: 150px;
   background: #c0c0c0;
   border: 1px solid #ffffff;
-  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
-    inset -2px -2px grey, inset 2px 2px #fff;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px grey,
+    inset 2px 2px #fff;
   overflow: hidden;
 }
 

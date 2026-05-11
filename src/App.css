@@ -346,15 +346,15 @@ ul {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 120vh;
-    height: 120vw;
+    width: 120dvh;
+    height: 120dvw;
     transform: translate(-50%, -50%) rotate(90deg) scale(0.833);
     overflow: hidden;
   }
 
   .desktop {
-    width: 120vh !important;
-    height: 120vw !important;
+    width: 120dvh !important;
+    height: 120dvw !important;
   }
 }
 
@@ -363,14 +363,14 @@ ul {
     position: absolute;
     top: 0;
     left: 0;
-    width: 120vw;
-    height: 120vh;
+    width: 120dvw;
+    height: 120dvh;
     transform: scale(0.833);
     transform-origin: top left;
   }
 
   .desktop {
-    width: 120vw !important;
-    height: 120vh !important;
+    width: 120dvw !important;
+    height: 120dvh !important;
   }
 }

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Taskbar from './Taskbar';
 import Window from './Window';
 import AboutMe from './apps/AboutMe';
 import DosBox from './apps/DosBox';
+import PopupMessage from './apps/PopupMessage';
 
 
 
@@ -10,7 +11,7 @@ export interface AppConfig {
     id: string;
     title: string;
     icon: string;
-    component: 'AboutMe' | 'DosBox';
+    component: 'AboutMe' | 'DosBox' | 'PopupMessage';
     bundleUrl?: string;
 }
 
@@ -21,6 +22,8 @@ interface WindowState {
     isActive: boolean;
     x: number;
     y: number;
+    width?: number;
+    height?: number;
 }
 
 const apps: AppConfig[] = [
@@ -50,6 +53,12 @@ const apps: AppConfig[] = [
         icon: '/icons/Doom.webp',
         component: 'DosBox',
         bundleUrl: '/roms/doom.jsdos'
+    },
+    {
+        id: 'popup-message',
+        title: 'Important Message',
+        icon: '/icons/phone.png',
+        component: 'PopupMessage'
     }
     // Add more apps here
 ];
@@ -70,6 +79,29 @@ const Desktop: React.FC = () => {
             y: (winHeight - height) / 2
         }];
     });
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mobile')) {
+            const newWindow: WindowState = {
+                id: `popup-${Date.now()}`,
+                appId: 'popup-message',
+                title: 'Important Message',
+                isActive: true,
+                x: (window.innerWidth - 300) / 2,
+                y: (window.innerHeight - 200) / 2,
+                width: 300,
+                height: 180
+            };
+            setWindows(prev => {
+                // Prevent duplicate windows in React strict mode
+                if (prev.some(w => w.appId === 'popup-message')) {
+                    return prev;
+                }
+                return [...prev.map(w => ({ ...w, isActive: false })), newWindow];
+            });
+        }
+    }, []);
 
     const handleWindowFocus = (id: string) => {
         setWindows(windows.map(w => ({ ...w, isActive: w.id === id })));
@@ -102,6 +134,8 @@ const Desktop: React.FC = () => {
         switch (app.component) {
             case 'AboutMe':
                 return <AboutMe />;
+            case 'PopupMessage':
+                return <PopupMessage />;
             case 'DosBox':
                 if (!app.bundleUrl) {
                     return <div>Missing bundleUrl for {app.title}</div>;
@@ -116,7 +150,7 @@ const Desktop: React.FC = () => {
         <div className="desktop">
             <div className="desktop-image" />
             <div className="desktop-content">
-                {apps.map(app => (
+                {apps.filter(a => a.id !== 'popup-message').map(app => (
                     <div
                         key={app.id}
                         className="desktop-icon"
@@ -136,6 +170,8 @@ const Desktop: React.FC = () => {
                         isActive={window.isActive}
                         x={window.x}
                         y={window.y}
+                        width={window.width}
+                        height={window.height}
                         type={apps.find(a => a.id === window.appId)?.component} // Add this line
                         onFocus={() => handleWindowFocus(window.id)}
                         onClose={() => handleWindowClose(window.id)}
@@ -147,7 +183,7 @@ const Desktop: React.FC = () => {
             <Taskbar
                 activeWindows={windows}
                 onWindowClick={handleWindowFocus}
-                apps={apps}
+                apps={apps.filter(a => a.id !== 'popup-message')}
                 onStartApp={handleIconDoubleClick}
             />
         </div>

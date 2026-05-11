@@ -7,6 +7,8 @@ interface WindowProps {
     isActive: boolean;
     x: number;
     y: number;
+    width?: number;
+    height?: number;
     onFocus: () => void;
     onClose: () => void;
     type?: string; // Add this prop
@@ -19,13 +21,15 @@ const Window: React.FC<WindowProps> = ({
     isActive,
     x: initialX,
     y: initialY,
+    width,
+    height,
     onFocus,
     onClose,
     type,
     children
 }) => {
-    const window_width = 600;
-    const window_height = 500;
+    const window_width = width ?? 600;
+    const window_height = height ?? 500;
     const TASKBAR_HEIGHT = 32;
     const MIN_WIDTH = 240;
     const MIN_HEIGHT = 160;

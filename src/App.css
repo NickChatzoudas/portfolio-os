@@ -325,3 +325,20 @@ li {
 ul {
   list-style-type: none;
 }
+
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  #root {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vh;
+    height: 100vw;
+    transform: translate(-50%, -50%) rotate(90deg);
+    overflow: hidden;
+  }
+
+  .desktop {
+    width: 100vh !important;
+    height: 100vw !important;
+  }
+}

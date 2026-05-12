@@ -65,21 +65,30 @@ const Window: React.FC<WindowProps> = ({
         dir: 'right' as ResizeDirection
     });
 
-    const handleDragStart = (e: React.MouseEvent) => {
+    const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
         if (!isMaximized) {
             setIsDragging(true);
+            const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+            const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
             dragStartRef.current = {
-                x: e.clientX - position.x,
-                y: e.clientY - position.y
+                x: clientX - position.x,
+                y: clientY - position.y
             };
         }
     };
 
-    const handleDrag = (e: MouseEvent) => {
+    const handleDrag = (e: MouseEvent | TouchEvent) => {
         if (isDragging) {
+            if (e.type === 'touchmove') {
+                e.preventDefault(); // Prevent scrolling while dragging
+            }
+            const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+            const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
             setPosition({
-                x: e.clientX - dragStartRef.current.x,
-                y: e.clientY - dragStartRef.current.y
+                x: clientX - dragStartRef.current.x,
+                y: clientY - dragStartRef.current.y
             });
         }
     };
@@ -242,10 +251,14 @@ const Window: React.FC<WindowProps> = ({
         if (isDragging) {
             window.addEventListener('mousemove', handleDrag);
             window.addEventListener('mouseup', handleDragEnd);
+            window.addEventListener('touchmove', handleDrag, { passive: false });
+            window.addEventListener('touchend', handleDragEnd);
         }
         return () => {
             window.removeEventListener('mousemove', handleDrag);
             window.removeEventListener('mouseup', handleDragEnd);
+            window.removeEventListener('touchmove', handleDrag);
+            window.removeEventListener('touchend', handleDragEnd);
         };
     }, [isDragging]);
 
@@ -278,7 +291,7 @@ const Window: React.FC<WindowProps> = ({
             }}
             onClick={onFocus}
         >
-            <div className="title-bar" onMouseDown={handleDragStart}>
+            <div className="title-bar" onMouseDown={handleDragStart} onTouchStart={handleDragStart}>
                 <div className="title-bar-text">
                     {icon && <img src={icon} alt="" style={{ width: '16px', height: '16px', marginRight: '6px', verticalAlign: 'middle' }} />}
                     {title}

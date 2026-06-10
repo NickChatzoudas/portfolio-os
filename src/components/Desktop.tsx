@@ -24,6 +24,7 @@ interface WindowState {
     y: number;
     width?: number;
     height?: number;
+    focusSignal?: number; // Add a signal to force un-minimize
 }
 
 const apps: AppConfig[] = [
@@ -104,7 +105,11 @@ const Desktop: React.FC = () => {
     }, []);
 
     const handleWindowFocus = (id: string) => {
-        setWindows(windows.map(w => ({ ...w, isActive: w.id === id })));
+        setWindows(prevWindows => prevWindows.map(w => ({
+            ...w,
+            isActive: w.id === id,
+            focusSignal: w.id === id ? Date.now() : w.focusSignal
+        })));
     };
 
     const handleWindowClose = (id: string) => {
@@ -124,7 +129,7 @@ const Desktop: React.FC = () => {
             y: Math.random() * (window.innerHeight - 500)
         };
 
-        setWindows([...windows.map(w => ({ ...w, isActive: false })), newWindow]);
+        setWindows(prevWindows => [...prevWindows.map(w => ({ ...w, isActive: false })), newWindow]);
     };
 
     const renderWindowContent = (window: WindowState) => {
@@ -155,6 +160,10 @@ const Desktop: React.FC = () => {
                         key={app.id}
                         className="desktop-icon"
                         onDoubleClick={() => handleIconDoubleClick(app.id)}
+                        onTouchEnd={(e) => {
+                            e.preventDefault(); // Prevent simulated mouse events
+                            handleIconDoubleClick(app.id);
+                        }}
                     >
                         <img className="desktop-icon-image" src={app.icon} alt={app.title} />
                         <span className="desktop-icon-text">{app.title}</span>
@@ -172,6 +181,7 @@ const Desktop: React.FC = () => {
                         y={window.y}
                         width={window.width}
                         height={window.height}
+                        focusSignal={window.focusSignal}
                         type={apps.find(a => a.id === window.appId)?.component} // Add this line
                         onFocus={() => handleWindowFocus(window.id)}
                         onClose={() => handleWindowClose(window.id)}

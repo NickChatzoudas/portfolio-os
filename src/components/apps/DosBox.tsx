@@ -26,6 +26,7 @@ export default function DosBox({ bundleUrl }: { bundleUrl: string }) {
         });
 
         return () => {
+            console.log('DosBox CLEANUP FIRED', bundleUrl)
             if (ciRef.current?.exit) {
                 ciRef.current.exit();
                 ciRef.current = null;

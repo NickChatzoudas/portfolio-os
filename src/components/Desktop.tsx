@@ -27,6 +27,7 @@ interface WindowState {
     width?: number;
     height?: number;
     focusSignal?: number; // Add a signal to force un-minimize
+    centered?: boolean;
 }
 
 const apps: AppConfig[] = [
@@ -74,7 +75,8 @@ const Desktop: React.FC = () => {
             title: 'About Me',
             isActive: true,
             x: (winWidth - width) / 2,
-            y: (winHeight - height) / 2
+            y: (winHeight - height) / 2,
+            centered: true
         }];
     });
 
@@ -89,7 +91,8 @@ const Desktop: React.FC = () => {
                 x: (window.innerWidth - 300) / 2,
                 y: (window.innerHeight - 200) / 2,
                 width: 300,
-                height: 180
+                height: 180,
+                centered: true
             };
             setWindows(prev => {
                 // Prevent duplicate windows in React strict mode
@@ -183,6 +186,7 @@ const Desktop: React.FC = () => {
                         width={window.width}
                         height={window.height}
                         focusSignal={window.focusSignal}
+                        centered={window.centered}
                         type={apps.find(a => a.id === window.appId)?.component} // Add this line
                         onFocus={() => handleWindowFocus(window.id)}
                         onClose={() => handleWindowClose(window.id)}

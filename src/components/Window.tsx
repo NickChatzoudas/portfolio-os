@@ -10,6 +10,7 @@ interface WindowProps {
     width?: number;
     height?: number;
     focusSignal?: number;
+    centered?: boolean;
     onFocus: () => void;
     onClose: () => void;
     type?: string; // Add this prop
@@ -25,6 +26,7 @@ const Window: React.FC<WindowProps> = ({
     width,
     height,
     focusSignal,
+    centered,
     onFocus,
     onClose,
     type,
@@ -64,12 +66,14 @@ const Window: React.FC<WindowProps> = ({
 
     const [prevSize, setPrevSize] = useState({ width: size.width, height: size.height, x: position.x, y: position.y });
 
-    // Tracks whether the user has manually resized the window. Until they do, the window
-    // is free to re-derive its "natural" size on browser resize events. This matters when
-    // the page is embedded in an iframe on another site: the iframe can report a very small
-    // innerWidth/innerHeight for its first render (before the host page finishes laying it
-    // out), which would otherwise permanently lock the window into a tiny mobile-scaled size.
+    // Tracks whether the user has manually resized/moved the window. Until they do, the window
+    // is free to re-derive its "natural" size (and, if `centered`, its centered position) on
+    // browser resize events. This matters when the page is embedded in an iframe on another
+    // site: the iframe can report a very small innerWidth/innerHeight for its first render
+    // (before the host page finishes laying it out), which would otherwise permanently lock
+    // the window into a tiny, off-center, mobile-scaled layout.
     const hasUserResizedRef = useRef(false);
+    const hasUserMovedRef = useRef(false);
 
     // Restore minimized window if it gets clicked/activated via the taskbar
     useEffect(() => {
@@ -78,8 +82,9 @@ const Window: React.FC<WindowProps> = ({
         }
     }, [focusSignal]);
 
-    // Enforce viewport boundaries upon window resizing, and re-derive the natural size for
-    // windows the user hasn't manually resized yet (see hasUserResizedRef above).
+    // Enforce viewport boundaries upon window resizing, and re-derive the natural size (and,
+    // for centered windows, the centered position) for windows the user hasn't manually
+    // resized/moved yet (see hasUserResizedRef/hasUserMovedRef above).
     useEffect(() => {
         const handleBrowserResize = () => {
             if (isMaximized) return;
@@ -92,9 +97,17 @@ const Window: React.FC<WindowProps> = ({
 
             const targetSize = hasUserResizedRef.current ? size : naturalSize;
 
+            const shouldRecenter = centered && !hasUserResizedRef.current && !hasUserMovedRef.current;
+            const targetPosition = shouldRecenter
+                ? {
+                    x: Math.max(0, (window.innerWidth - targetSize.width) / 2),
+                    y: Math.max(0, (window.innerHeight - TASKBAR_HEIGHT - targetSize.height) / 2)
+                }
+                : position;
+
             const clamped = clampWindowToViewport({
-                x: position.x,
-                y: position.y,
+                x: targetPosition.x,
+                y: targetPosition.y,
                 width: targetSize.width,
                 height: targetSize.height
             });
@@ -105,7 +118,7 @@ const Window: React.FC<WindowProps> = ({
 
         window.addEventListener('resize', handleBrowserResize);
         return () => window.removeEventListener('resize', handleBrowserResize);
-    }, [isMaximized, size, position]);
+    }, [isMaximized, size, position, centered]);
 
     const windowRef = useRef<HTMLDivElement>(null);
     const dragStartRef = useRef({ x: 0, y: 0 });
@@ -132,6 +145,7 @@ const Window: React.FC<WindowProps> = ({
 
     const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
         if (!isMaximized) {
+            hasUserMovedRef.current = true;
             setIsDragging(true);
             const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
             const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;

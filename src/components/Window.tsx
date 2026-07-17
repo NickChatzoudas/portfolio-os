@@ -64,6 +64,13 @@ const Window: React.FC<WindowProps> = ({
 
     const [prevSize, setPrevSize] = useState({ width: size.width, height: size.height, x: position.x, y: position.y });
 
+    // Tracks whether the user has manually resized the window. Until they do, the window
+    // is free to re-derive its "natural" size on browser resize events. This matters when
+    // the page is embedded in an iframe on another site: the iframe can report a very small
+    // innerWidth/innerHeight for its first render (before the host page finishes laying it
+    // out), which would otherwise permanently lock the window into a tiny mobile-scaled size.
+    const hasUserResizedRef = useRef(false);
+
     // Restore minimized window if it gets clicked/activated via the taskbar
     useEffect(() => {
         if (isMinimized) {
@@ -71,24 +78,34 @@ const Window: React.FC<WindowProps> = ({
         }
     }, [focusSignal]);
 
-    // Enforce viewport boundaries only upon window resizing 
+    // Enforce viewport boundaries upon window resizing, and re-derive the natural size for
+    // windows the user hasn't manually resized yet (see hasUserResizedRef above).
     useEffect(() => {
         const handleBrowserResize = () => {
-            if (!isMaximized) {
-                setPosition(prevPosition => {
-                    return clampWindowToViewport({
-                        x: prevPosition.x,
-                        y: prevPosition.y,
-                        width: size.width,
-                        height: size.height
-                    });
-                });
-            }
+            if (isMaximized) return;
+
+            const isMobile = window.innerWidth <= 600;
+            const naturalSize = {
+                width: isMobile ? getMobileWidth() : window_width,
+                height: isMobile ? getMobileHeight() : window_height
+            };
+
+            const targetSize = hasUserResizedRef.current ? size : naturalSize;
+
+            const clamped = clampWindowToViewport({
+                x: position.x,
+                y: position.y,
+                width: targetSize.width,
+                height: targetSize.height
+            });
+
+            setSize({ width: clamped.width, height: clamped.height });
+            setPosition({ x: clamped.x, y: clamped.y });
         };
 
         window.addEventListener('resize', handleBrowserResize);
         return () => window.removeEventListener('resize', handleBrowserResize);
-    }, [isMaximized, size]);
+    }, [isMaximized, size, position]);
 
     const windowRef = useRef<HTMLDivElement>(null);
     const dragStartRef = useRef({ x: 0, y: 0 });
@@ -185,6 +202,7 @@ const Window: React.FC<WindowProps> = ({
         e.stopPropagation();
         onFocus();
 
+        hasUserResizedRef.current = true;
         setIsResizing(true);
         const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
         const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;

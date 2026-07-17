@@ -362,7 +362,7 @@ const Window: React.FC<WindowProps> = ({
                     <button aria-label="Close" onClick={handleClose}></button>
                 </div>
             </div>
-            <div className={`window-body ${type === 'DosBox' ? 'dosbox' : ''}`}>
+            <div className="window-body">
                 {children}
             </div>
             {!isMaximized && (

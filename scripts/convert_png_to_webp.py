@@ -7,9 +7,6 @@ from pathlib import Path
 from PIL import Image
 
 
-EXCLUDE_RELATIVE = Path("public/js-dos/emulators-ui-loader.png")
-
-
 def convert_one(png_path: Path) -> Path:
     webp_path = png_path.with_suffix(".webp")
 
@@ -39,7 +36,7 @@ def convert_one(png_path: Path) -> Path:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Convert all PNGs in public/ to WebP, excluding the js-dos loader PNG.")
+    parser = argparse.ArgumentParser(description="Convert all PNGs in public/ to WebP.")
     parser.add_argument(
         "--repo",
         default=str(Path(__file__).resolve().parents[1]),
@@ -54,12 +51,8 @@ def main() -> int:
     if not public_dir.exists():
         raise SystemExit(f"public/ folder not found at: {public_dir}")
 
-    exclude_abs = (repo_root / EXCLUDE_RELATIVE).resolve()
-
     png_files: list[Path] = []
     for p in public_dir.rglob("*.png"):
-        if p.resolve() == exclude_abs:
-            continue
         png_files.append(p)
 
     if not png_files:

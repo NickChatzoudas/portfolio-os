@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Taskbar from './Taskbar';
 import Window from './Window';
 import AboutMe from './apps/AboutMe';
-import DosBox from './apps/DosBox';
 import PopupMessage from './apps/PopupMessage';
 
 
@@ -11,8 +10,7 @@ export interface AppConfig {
     id: string;
     title: string;
     icon: string;
-    component: 'AboutMe' | 'DosBox' | 'PopupMessage';
-    bundleUrl?: string;
+    component: 'AboutMe' | 'PopupMessage';
 }
 
 interface WindowState {
@@ -33,27 +31,6 @@ const apps: AppConfig[] = [
         title: 'About Me',
         icon: '/icon.webp',
         component: 'AboutMe'
-    },
-    {
-        id: 'pacman',
-        title: 'PacMan',
-        icon: '/icons/Pacman.webp',
-        component: 'DosBox',
-        bundleUrl: '/roms/pacman.jsdos'
-    },
-    // {
-    //     id: 'solitaire',
-    //     title: 'Solitaire',
-    //     icon: '/icons/Solitaire.webp',
-    //     component: 'DosBox',
-    //     bundleUrl: '/roms/solitaire.jsdos'
-    // }
-    {
-        id: 'doom',
-        title: 'Doom',
-        icon: '/icons/Doom.webp',
-        component: 'DosBox',
-        bundleUrl: '/roms/doom.jsdos'
     },
     {
         id: 'popup-message',
@@ -141,11 +118,6 @@ const Desktop: React.FC = () => {
                 return <AboutMe />;
             case 'PopupMessage':
                 return <PopupMessage />;
-            case 'DosBox':
-                if (!app.bundleUrl) {
-                    return <div>Missing bundleUrl for {app.title}</div>;
-                }
-                return <DosBox bundleUrl={app.bundleUrl} />;
             default:
                 return <div>Window content not found</div>;
         }

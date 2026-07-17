@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Taskbar from './Taskbar';
 import Window from './Window';
 import AboutMe from './apps/AboutMe';
+import Pacman from './apps/Pacman';
 import PopupMessage from './apps/PopupMessage';
+import Solitaire from './apps/Solitaire';
 
 
 
@@ -10,7 +12,9 @@ export interface AppConfig {
     id: string;
     title: string;
     icon: string;
-    component: 'AboutMe' | 'PopupMessage';
+    component: 'AboutMe' | 'Pacman' | 'PopupMessage' | 'Solitaire';
+    width?: number;
+    height?: number;
 }
 
 interface WindowState {
@@ -31,6 +35,22 @@ const apps: AppConfig[] = [
         title: 'About Me',
         icon: '/icon.webp',
         component: 'AboutMe'
+    },
+    {
+        id: 'pacman',
+        title: 'Pac-Man',
+        icon: '/icons/pacman.webp',
+        component: 'Pacman',
+        width: 420,
+        height: 470
+    },
+    {
+        id: 'solitaire',
+        title: 'Solitaire',
+        icon: '/icons/solitaire.webp',
+        component: 'Solitaire',
+        width: 560,
+        height: 520
     },
     {
         id: 'popup-message',
@@ -97,13 +117,18 @@ const Desktop: React.FC = () => {
         const app = apps.find(a => a.id === appId);
         if (!app) return;
 
+        const appWidth = app.width ?? 600;
+        const appHeight = app.height ?? 500;
+
         const newWindow: WindowState = {
             id: `${appId}-${Date.now()}`,
             appId: app.id,
             title: app.title,
             isActive: true,
-            x: Math.random() * (window.innerWidth - 600),
-            y: Math.random() * (window.innerHeight - 500)
+            x: Math.random() * Math.max(1, window.innerWidth - appWidth),
+            y: Math.random() * Math.max(1, window.innerHeight - appHeight),
+            width: appWidth,
+            height: appHeight
         };
 
         setWindows(prevWindows => [...prevWindows.map(w => ({ ...w, isActive: false })), newWindow]);
@@ -116,8 +141,12 @@ const Desktop: React.FC = () => {
         switch (app.component) {
             case 'AboutMe':
                 return <AboutMe />;
+            case 'Pacman':
+                return <Pacman />;
             case 'PopupMessage':
                 return <PopupMessage />;
+            case 'Solitaire':
+                return <Solitaire />;
             default:
                 return <div>Window content not found</div>;
         }

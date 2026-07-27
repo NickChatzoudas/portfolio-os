@@ -43,7 +43,7 @@ const apps: AppConfig[] = [
         icon: '/icons/pacman.webp',
         component: 'Pacman',
         width: 420,
-        height: 470
+        height: 520
     },
     {
         id: 'solitaire',
@@ -51,7 +51,7 @@ const apps: AppConfig[] = [
         icon: '/icons/solitaire.webp',
         component: 'Solitaire',
         width: 560,
-        height: 520
+        height: 550
     },
     {
         id: 'popup-message',

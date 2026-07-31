@@ -309,31 +309,6 @@ ul {
   }
 }
 
-@media screen and (max-width: 768px) and (orientation: portrait) {
-  .window {
-    min-width: 150px !important;
-    min-height: 100px !important;
-    width: 90% !important;
-    height: 80% !important;
-    top: 5% !important;
-    left: 5% !important;
-  }
-  #root {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120dvh;
-    height: 120dvw;
-    transform: translate(-50%, -50%) rotate(90deg) scale(0.833);
-    overflow: hidden;
-  }
-
-  .desktop {
-    width: 120dvh !important;
-    height: 120dvw !important;
-  }
-}
-
 @media screen and (max-height: 500px) and (orientation: landscape) {
   #root {
     position: absolute;

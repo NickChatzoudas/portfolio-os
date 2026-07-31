@@ -38,31 +38,24 @@ const Window: React.FC<WindowProps> = ({
     const MIN_WIDTH = 240;
     const MIN_HEIGHT = 160;
 
-    // Allow windows to be sized normally. If on mobile, scale them down significantly so they act like distinct apps.
-    const getMobileWidth = () => Math.min(window_width, window.innerWidth * 0.85);
-    const getMobileHeight = () => Math.min(window_height, window.innerHeight * 0.6);
-
     const [isDragging, setIsDragging] = useState(false);
-    const [isMaximized, setIsMaximized] = useState(false); // Do not force maximize on mobile or they can't be dragged
+    const [isMaximized, setIsMaximized] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
 
-    // Initialize state properly respecting device bounds at mount time
     const [size, setSize] = useState(() => {
-        const isMobile = window.innerWidth <= 600;
+        const maxWidth = Math.max(MIN_WIDTH, window.innerWidth);
+        const maxHeight = Math.max(MIN_HEIGHT, window.innerHeight - TASKBAR_HEIGHT);
         return {
-            width: isMobile ? getMobileWidth() : window_width,
-            height: isMobile ? getMobileHeight() : window_height
+            width: Math.min(window_width, maxWidth),
+            height: Math.min(window_height, maxHeight)
         };
     });
 
-    const [position, setPosition] = useState(() => {
-        const isMobile = window.innerWidth <= 600;
-        return {
-            x: isMobile ? Math.max(0, (window.innerWidth - getMobileWidth()) / 2) : Math.max(0, initialX),
-            y: isMobile ? Math.max(0, (window.innerHeight - TASKBAR_HEIGHT - getMobileHeight()) / 2) : Math.max(0, initialY)
-        };
-    });
+    const [position, setPosition] = useState(() => ({
+        x: Math.min(Math.max(0, initialX), Math.max(0, window.innerWidth - 30)),
+        y: Math.min(Math.max(0, initialY), Math.max(0, window.innerHeight - TASKBAR_HEIGHT - 30))
+    }));
 
     const [prevSize, setPrevSize] = useState({ width: size.width, height: size.height, x: position.x, y: position.y });
 
@@ -89,10 +82,9 @@ const Window: React.FC<WindowProps> = ({
         const handleBrowserResize = () => {
             if (isMaximized) return;
 
-            const isMobile = window.innerWidth <= 600;
             const naturalSize = {
-                width: isMobile ? getMobileWidth() : window_width,
-                height: isMobile ? getMobileHeight() : window_height
+                width: window_width,
+                height: window_height
             };
 
             const targetSize = hasUserResizedRef.current ? size : naturalSize;

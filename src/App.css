@@ -519,17 +519,226 @@ ul {
   font-size: 20px;
 }
 
+.face-tracker {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 0px;
+  overflow: hidden;
+  border: 3px solid #222;
+  margin: 15px 15px 15px 0;
+}
+
+.sol98-card-selected {
+  outline: 3px solid #ffdd00 !important;
+  box-shadow: 0 0 6px rgba(255, 220, 0, 0.9) !important;
+  transform: translateY(-2px);
+}
+
+.sol98-card:hover {
+  outline: 2px solid #ffdd00;
+  cursor: pointer;
+}
+
+/* Pacman D-Pad keys are hidden on PC and shown only on mobile viewports */
+.pac98-dpad {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.pac98-dpad-middle {
+  display: flex;
+  gap: 16px;
+}
+
+.pac98-dpad-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  background: #c0c0c0;
+  border: 2px solid #fff;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf;
+  padding: 0;
+}
+
+.pac98-dpad-btn:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+  background: #a0a0a0;
+}
+
 @media screen and (max-width: 768px) {
+  .pac98-dpad {
+    display: flex;
+  }
+
+  .desktop-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .desktop-icon {
+    width: 68px;
+    margin: 4px;
+    padding: 4px;
+  }
+
+  .desktop-icon-text {
+    font-size: 11px;
+  }
+
+  .taskbar {
+    height: 36px;
+    padding: 2px 3px;
+  }
+
+  .start-button {
+    height: 28px;
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+
+  .taskbar-items {
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .taskbar-items::-webkit-scrollbar {
+    display: none;
+  }
+
+  .window-button {
+    min-width: 44px;
+    max-width: 100px;
+    height: 28px;
+    padding: 2px 4px;
+    margin: 0 1px;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 auto;
+  }
+
+  .system-tray {
+    height: 26px;
+    padding: 0 4px;
+    margin-left: 2px;
+  }
+
+  .time {
+    font-size: 10px;
+  }
+
+  .title-bar {
+    padding: 3px 6px;
+    min-height: 28px;
+  }
+
+  .title-bar-controls button {
+    min-width: 20px;
+    min-height: 20px;
+  }
+
+  .about-me {
+    padding: 10px;
+  }
+
+  .about-me .field-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .about-me .face-tracker {
+    width: 90px;
+    height: 90px;
+    max-width: 90px;
+    margin: 5px;
+  }
+
+  .about-me h4 {
+    font-size: 1rem;
+  }
+
+  .about-me p, .about-me li {
+    font-size: 0.85rem;
+  }
+
   .pac98-hud {
     width: 100%;
-    max-width: 360px;
+    max-width: 100%;
+    padding: 0 4px;
+  }
+
+  .pac98-canvas {
+    max-width: 100%;
+    height: auto !important;
+    aspect-ratio: 19 / 21;
+  }
+
+  .sol98-shell {
+    padding: 4px;
+    width: 100%;
+    overflow-x: auto;
   }
 
   .sol98-board {
-    min-height: unset;
+    padding: 4px;
+    gap: 6px;
+    min-height: auto;
+    overflow-x: auto;
   }
 
   .sol98-row {
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .sol98-pile {
+    width: 42px;
+    height: 60px;
+  }
+
+  .sol98-spacer {
+    width: 42px;
+  }
+
+  .sol98-card {
+    width: 40px;
+    height: 58px;
+    padding: 1px 2px;
+  }
+
+  .sol98-corner {
+    font-size: 10px;
+  }
+
+  .sol98-center {
+    font-size: 16px;
+  }
+
+  .sol98-placeholder {
+    font-size: 14px;
+  }
+
+  .sol98-pile-tableau {
+    height: 220px;
   }
 }

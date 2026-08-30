@@ -116,25 +116,43 @@ const Desktop: React.FC = () => {
         setWindows(prev => prev.filter(w => w.id !== id));
     };
 
-    const handleIconDoubleClick = (appId: string) => {
+    const handleIconOpen = (appId: string) => {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            const existing = windows.find(w => w.appId === appId);
+            if (existing) {
+                handleWindowFocus(existing.id);
+                return;
+            }
+        }
+
         const app = apps.find(a => a.id === appId);
         if (!app) return;
 
         const appWidth = app.width ?? 600;
         const appHeight = app.height ?? 500;
+        const id = `${appId}-${Date.now()}`;
+        const x = isMobile ? 0 : Math.max(0, Math.random() * Math.max(1, window.innerWidth - appWidth));
+        const y = isMobile ? 0 : Math.max(0, Math.random() * Math.max(1, window.innerHeight - appHeight));
 
         const newWindow: WindowState = {
-            id: `${appId}-${Date.now()}`,
+            id,
             appId: app.id,
             title: app.title,
             isActive: true,
-            x: Math.random() * Math.max(1, window.innerWidth - appWidth),
-            y: Math.random() * Math.max(1, window.innerHeight - appHeight),
+            x,
+            y,
             width: appWidth,
             height: appHeight
         };
 
         setWindows(prevWindows => [...prevWindows.map(w => ({ ...w, isActive: false })), newWindow]);
+    };
+
+    const handleIconClick = (appId: string) => {
+        if (window.innerWidth <= 768) {
+            handleIconOpen(appId);
+        }
     };
 
     const renderWindowContent = (window: WindowState) => {
@@ -163,10 +181,11 @@ const Desktop: React.FC = () => {
                     <div
                         key={app.id}
                         className="desktop-icon"
-                        onDoubleClick={() => handleIconDoubleClick(app.id)}
+                        onClick={() => handleIconClick(app.id)}
+                        onDoubleClick={() => handleIconOpen(app.id)}
                         onTouchEnd={(e) => {
-                            e.preventDefault(); // Prevent simulated mouse events
-                            handleIconDoubleClick(app.id);
+                            e.preventDefault();
+                            handleIconOpen(app.id);
                         }}
                     >
                         <img className="desktop-icon-image" src={app.icon} alt={app.title} />
@@ -187,7 +206,6 @@ const Desktop: React.FC = () => {
                         height={window.height}
                         focusSignal={window.focusSignal}
                         centered={window.centered}
-                        type={apps.find(a => a.id === window.appId)?.component} // Add this line
                         onFocus={() => handleWindowFocus(window.id)}
                         onClose={() => handleWindowClose(window.id)}
                     >
@@ -199,7 +217,7 @@ const Desktop: React.FC = () => {
                 activeWindows={windows}
                 onWindowClick={handleWindowFocus}
                 apps={apps.filter(a => a.id !== 'popup-message')}
-                onStartApp={handleIconDoubleClick}
+                onStartApp={handleIconOpen}
             />
         </div>
     );

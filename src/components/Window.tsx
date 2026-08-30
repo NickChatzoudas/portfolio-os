@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface WindowProps {
     id: string;
@@ -13,7 +13,6 @@ interface WindowProps {
     centered?: boolean;
     onFocus: () => void;
     onClose: () => void;
-    type?: string; // Add this prop
     children: React.ReactNode;
 }
 
@@ -29,7 +28,6 @@ const Window: React.FC<WindowProps> = ({
     centered,
     onFocus,
     onClose,
-    type,
     children
 }) => {
     const window_width = width ?? 600;
@@ -37,6 +35,8 @@ const Window: React.FC<WindowProps> = ({
     const TASKBAR_HEIGHT = 32;
     const MIN_WIDTH = 240;
     const MIN_HEIGHT = 160;
+
+    const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= 768;
 
     const [isDragging, setIsDragging] = useState(false);
     const [isMaximized, setIsMaximized] = useState(false);
@@ -52,10 +52,14 @@ const Window: React.FC<WindowProps> = ({
         };
     });
 
-    const [position, setPosition] = useState(() => ({
-        x: Math.min(Math.max(0, initialX), Math.max(0, window.innerWidth - 30)),
-        y: Math.min(Math.max(0, initialY), Math.max(0, window.innerHeight - TASKBAR_HEIGHT - 30))
-    }));
+    const [position, setPosition] = useState(() => {
+        const w = Math.min(window_width, window.innerWidth);
+        const h = Math.min(window_height, window.innerHeight - TASKBAR_HEIGHT);
+        return {
+            x: Math.max(0, (window.innerWidth - w) / 2),
+            y: Math.max(0, (window.innerHeight - TASKBAR_HEIGHT - h) / 2)
+        };
+    });
 
     const [prevSize, setPrevSize] = useState({ width: size.width, height: size.height, x: position.x, y: position.y });
 
@@ -70,10 +74,29 @@ const Window: React.FC<WindowProps> = ({
 
     // Restore minimized window if it gets clicked/activated via the taskbar
     useEffect(() => {
-        if (isMinimized) {
-            setIsMinimized(false);
+        if (focusSignal) {
+            const t = setTimeout(() => setIsMinimized(false), 0);
+            return () => clearTimeout(t);
         }
     }, [focusSignal]);
+
+    const clampWindowToViewport = useCallback((next: { x: number; y: number; width: number; height: number }) => {
+        const maxWidth = Math.max(MIN_WIDTH, window.innerWidth);
+        const maxHeight = Math.max(MIN_HEIGHT, window.innerHeight - TASKBAR_HEIGHT);
+
+        const width = Math.max(MIN_WIDTH, Math.min(next.width, maxWidth));
+        const height = Math.max(MIN_HEIGHT, Math.min(next.height, maxHeight));
+
+        // Let windows be dragged off-screen horizontally, but keep an edge visible
+        let x = Math.min(next.x, window.innerWidth - 30);
+        x = Math.max(x, -width + 30);
+
+        // Keep the title bar reachable on the Y axis
+        let y = Math.max(0, next.y);
+        y = Math.min(y, window.innerHeight - TASKBAR_HEIGHT - 30);
+
+        return { x, y, width, height };
+    }, []);
 
     // Enforce viewport boundaries upon window resizing, and re-derive the natural size (and,
     // for centered windows, the centered position) for windows the user hasn't manually
@@ -110,7 +133,7 @@ const Window: React.FC<WindowProps> = ({
 
         window.addEventListener('resize', handleBrowserResize);
         return () => window.removeEventListener('resize', handleBrowserResize);
-    }, [isMaximized, size, position, centered]);
+    }, [isMaximized, size, position, centered, clampWindowToViewport, window_height, window_width]);
 
     const windowRef = useRef<HTMLDivElement>(null);
     const dragStartRef = useRef({ x: 0, y: 0 });
@@ -149,10 +172,10 @@ const Window: React.FC<WindowProps> = ({
         }
     };
 
-    const handleDrag = (e: MouseEvent | TouchEvent) => {
+    const handleDrag = useCallback((e: MouseEvent | TouchEvent) => {
         if (isDragging) {
             if (e.type === 'touchmove' && e.cancelable) {
-                e.preventDefault(); // Prevent scrolling while dragging
+                e.preventDefault();
             }
             const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
             const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
@@ -162,7 +185,7 @@ const Window: React.FC<WindowProps> = ({
                 y: clientY - dragStartRef.current.y
             });
         }
-    };
+    }, [isDragging]);
 
     const handleDragEnd = () => {
         setIsDragging(false);
@@ -181,27 +204,9 @@ const Window: React.FC<WindowProps> = ({
             window.removeEventListener('touchmove', handleDrag);
             window.removeEventListener('touchend', handleDragEnd);
         };
-    }, [isDragging]);
+    }, [isDragging, handleDrag]);
 
-    const clampWindowToViewport = (next: { x: number; y: number; width: number; height: number }) => {
-        const maxWidth = Math.max(MIN_WIDTH, window.innerWidth);
-        const maxHeight = Math.max(MIN_HEIGHT, window.innerHeight - TASKBAR_HEIGHT);
-
-        let width = Math.max(MIN_WIDTH, Math.min(next.width, maxWidth));
-        let height = Math.max(MIN_HEIGHT, Math.min(next.height, maxHeight));
-
-        // Let windows be dragged off-screen horizontally, but keep an edge visible
-        let x = Math.min(next.x, window.innerWidth - 30);
-        x = Math.max(x, -width + 30);
-
-        // Keep the title bar reachable on the Y axis
-        let y = Math.max(0, next.y);
-        y = Math.min(y, window.innerHeight - TASKBAR_HEIGHT - 30);
-
-        return { x, y, width, height };
-    };
-
-    const handleResizeStart = (dir: ResizeDirection) => (e: React.MouseEvent | React.TouchEvent) => {
+    const handleResizeStart = (dir: ResizeDirection, e: React.MouseEvent | React.TouchEvent) => {
         if (isMaximized) return;
 
         e.preventDefault();
@@ -307,7 +312,8 @@ const Window: React.FC<WindowProps> = ({
         setIsResizing(false);
     };
 
-    const handleMaximize = () => {
+    const handleMaximize = (e?: React.MouseEvent | React.TouchEvent) => {
+        if (e) e.stopPropagation();
         if (!isMaximized) {
             setPrevSize({
                 width: size.width,
@@ -328,7 +334,8 @@ const Window: React.FC<WindowProps> = ({
         setIsMaximized(!isMaximized);
     };
 
-    const handleMinimize = () => {
+    const handleMinimize = (e?: React.MouseEvent | React.TouchEvent) => {
+        if (e) e.stopPropagation();
         setIsMinimized(!isMinimized);
     };
 
@@ -338,21 +345,20 @@ const Window: React.FC<WindowProps> = ({
     };
 
     useEffect(() => {
+        const onResizeTouch = (e: TouchEvent) => handleResize(e);
         if (isResizing) {
             window.addEventListener('mousemove', handleResize);
             window.addEventListener('mouseup', handleResizeEnd);
-            window.addEventListener('touchmove', handleResize as any, { passive: false });
+            window.addEventListener('touchmove', onResizeTouch, { passive: false });
             window.addEventListener('touchend', handleResizeEnd);
         }
         return () => {
             window.removeEventListener('mousemove', handleResize);
             window.removeEventListener('mouseup', handleResizeEnd);
-            window.removeEventListener('touchmove', handleResize as any);
+            window.removeEventListener('touchmove', onResizeTouch);
             window.removeEventListener('touchend', handleResizeEnd);
         };
-    }, [isResizing]);
-
-
+    }, [isResizing, handleResize]);
 
     return (
         <div
@@ -391,15 +397,15 @@ const Window: React.FC<WindowProps> = ({
             </div>
             {!isMaximized && (
                 <>
-                    <div className="resize-handle top" onMouseDown={handleResizeStart('top')} onTouchStart={handleResizeStart('top')} />
-                    <div className="resize-handle right" onMouseDown={handleResizeStart('right')} onTouchStart={handleResizeStart('right')} />
-                    <div className="resize-handle bottom" onMouseDown={handleResizeStart('bottom')} onTouchStart={handleResizeStart('bottom')} />
-                    <div className="resize-handle left" onMouseDown={handleResizeStart('left')} onTouchStart={handleResizeStart('left')} />
+                    <div className="resize-handle top" onMouseDown={e => handleResizeStart('top', e)} onTouchStart={e => handleResizeStart('top', e)} />
+                    <div className="resize-handle right" onMouseDown={e => handleResizeStart('right', e)} onTouchStart={e => handleResizeStart('right', e)} />
+                    <div className="resize-handle bottom" onMouseDown={e => handleResizeStart('bottom', e)} onTouchStart={e => handleResizeStart('bottom', e)} />
+                    <div className="resize-handle left" onMouseDown={e => handleResizeStart('left', e)} onTouchStart={e => handleResizeStart('left', e)} />
 
-                    <div className="resize-handle top-left" onMouseDown={handleResizeStart('top-left')} onTouchStart={handleResizeStart('top-left')} />
-                    <div className="resize-handle top-right" onMouseDown={handleResizeStart('top-right')} onTouchStart={handleResizeStart('top-right')} />
-                    <div className="resize-handle bottom-left" onMouseDown={handleResizeStart('bottom-left')} onTouchStart={handleResizeStart('bottom-left')} />
-                    <div className="resize-handle bottom-right" onMouseDown={handleResizeStart('bottom-right')} onTouchStart={handleResizeStart('bottom-right')} />
+                    <div className="resize-handle top-left" onMouseDown={e => handleResizeStart('top-left', e)} onTouchStart={e => handleResizeStart('top-left', e)} />
+                    <div className="resize-handle top-right" onMouseDown={e => handleResizeStart('top-right', e)} onTouchStart={e => handleResizeStart('top-right', e)} />
+                    <div className="resize-handle bottom-left" onMouseDown={e => handleResizeStart('bottom-left', e)} onTouchStart={e => handleResizeStart('bottom-left', e)} />
+                    <div className="resize-handle bottom-right" onMouseDown={e => handleResizeStart('bottom-right', e)} onTouchStart={e => handleResizeStart('bottom-right', e)} />
                 </>
             )}
         </div>

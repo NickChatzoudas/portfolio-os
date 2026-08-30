@@ -633,13 +633,45 @@ const Pacman: React.FC = () => {
             img.src = `/pacman-sprites/${name}.svg`;
             spriteSheetsRef.current[name] = img;
         });
-        startGame();
-        wrapRef.current?.focus();
+        const timerId = setTimeout(() => {
+            startGame();
+            wrapRef.current?.focus();
+        }, 0);
         return () => {
+            clearTimeout(timerId);
             if (animRef.current) cancelAnimationFrame(animRef.current);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
+
+    function handleTouchStart(e: React.TouchEvent) {
+        touchStartRef.current = {
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY
+        };
+    }
+
+    function handleTouchEnd(e: React.TouchEvent) {
+        if (!touchStartRef.current) return;
+        const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+        const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+        touchStartRef.current = null;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 20) pacNextDirRef.current = DIRS.ArrowRight;
+            else if (dx < -20) pacNextDirRef.current = DIRS.ArrowLeft;
+        } else {
+            if (dy > 20) pacNextDirRef.current = DIRS.ArrowDown;
+            else if (dy < -20) pacNextDirRef.current = DIRS.ArrowUp;
+        }
+    }
+
+    function handleDPad(dirKey: string) {
+        const d = DIRS[dirKey];
+        if (d) pacNextDirRef.current = d;
+    }
 
     function handleKeyDown(event: React.KeyboardEvent) {
         const d = DIRS[event.key];
@@ -659,9 +691,26 @@ const Pacman: React.FC = () => {
                     ))}
                 </div>
             </div>
-            <canvas ref={canvasRef} width={COLS * CELL} height={ROWS * CELL} className="pac98-canvas" />
+            <canvas
+                ref={canvasRef}
+                width={COLS * CELL}
+                height={ROWS * CELL}
+                className="pac98-canvas"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+            />
             {message && <div className="pac98-message">{message}</div>}
-            <button onClick={startGame} >Restart</button>
+            
+            <div className="pac98-dpad">
+                <button type="button" className="pac98-dpad-btn up" onClick={() => handleDPad('ArrowUp')} onTouchStart={(e) => { e.preventDefault(); handleDPad('ArrowUp'); }}>▲</button>
+                <div className="pac98-dpad-middle">
+                    <button type="button" className="pac98-dpad-btn left" onClick={() => handleDPad('ArrowLeft')} onTouchStart={(e) => { e.preventDefault(); handleDPad('ArrowLeft'); }}>◄</button>
+                    <button type="button" className="pac98-dpad-btn down" onClick={() => handleDPad('ArrowDown')} onTouchStart={(e) => { e.preventDefault(); handleDPad('ArrowDown'); }}>▼</button>
+                    <button type="button" className="pac98-dpad-btn right" onClick={() => handleDPad('ArrowRight')} onTouchStart={(e) => { e.preventDefault(); handleDPad('ArrowRight'); }}>►</button>
+                </div>
+            </div>
+
+            <button onClick={startGame} style={{ marginTop: '4px' }}>Restart</button>
         </div>
     );
 };

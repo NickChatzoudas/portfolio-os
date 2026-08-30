@@ -1,6 +1,5 @@
 import React from 'react';
 import '98.css/dist/98.css';
-import FaceTracker from '../face-looker/FaceTracker';
 
 const AboutMe: React.FC = () => {
     return (

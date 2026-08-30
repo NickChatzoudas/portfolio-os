@@ -83,13 +83,16 @@ function getTotalFoundationCards(foundations: Record<Suit, Card[]>): number {
 const Solitaire: React.FC = () => {
     const [board, setBoard] = React.useState<BoardState>(() => deal());
     const [status, setStatus] = React.useState('');
+    const [selectedSource, setSelectedSource] = React.useState<DragSource | null>(null);
 
     const newGame = () => {
         setBoard(deal());
         setStatus('');
+        setSelectedSource(null);
     };
 
     const drawStock = () => {
+        setSelectedSource(null);
         setBoard(previous => {
             if (previous.stock.length === 0) {
                 if (previous.waste.length === 0) return previous;
@@ -105,7 +108,42 @@ const Solitaire: React.FC = () => {
         });
     };
 
+    const isSelected = (source: DragSource) => {
+        if (!selectedSource) return false;
+        if (selectedSource.type !== source.type) return false;
+        if (source.type === 'waste') return true;
+        return selectedSource.pileIndex === source.pileIndex && selectedSource.cardIndex === source.cardIndex;
+    };
+
+    const handleCardTap = (source: DragSource, event?: React.MouseEvent) => {
+        if (event) event.stopPropagation();
+        if (!selectedSource) {
+            setSelectedSource(source);
+            return;
+        }
+
+        if (isSelected(source)) {
+            setSelectedSource(null);
+            return;
+        }
+
+        if (source.type === 'tableau' && source.pileIndex !== undefined) {
+            handleDrop(selectedSource, { type: 'tableau', pileIndex: source.pileIndex });
+            setSelectedSource(null);
+        } else {
+            setSelectedSource(source);
+        }
+    };
+
+    const handlePileTap = (destination: DropTarget) => {
+        if (selectedSource) {
+            handleDrop(selectedSource, destination);
+            setSelectedSource(null);
+        }
+    };
+
     const tryAutoFoundation = (source: DragSource) => {
+        setSelectedSource(null);
         setBoard(previous => {
             let card: Card | undefined;
 
@@ -233,7 +271,8 @@ const Solitaire: React.FC = () => {
 
     React.useEffect(() => {
         if (getTotalFoundationCards(board.foundations) === 52) {
-            setStatus('You win!');
+            const timer = setTimeout(() => setStatus('You win!'), 0);
+            return () => clearTimeout(timer);
         }
     }, [board.foundations]);
 
@@ -268,12 +307,15 @@ const Solitaire: React.FC = () => {
                     <div className="sol98-pile" onDragOver={event => event.preventDefault()}>
                         {board.waste.length > 0 && (() => {
                             const card = board.waste[board.waste.length - 1];
+                            const wasteSource: DragSource = { type: 'waste' };
+                            const active = isSelected(wasteSource);
                             return (
                                 <div
-                                    className={`sol98-card sol98-card-${suitColor(card.suit)}`}
+                                    className={`sol98-card sol98-card-${suitColor(card.suit)} ${active ? 'sol98-card-selected' : ''}`}
                                     draggable
-                                    onDragStart={event => onDragStart(event, { type: 'waste' })}
-                                    onDoubleClick={() => tryAutoFoundation({ type: 'waste' })}
+                                    onDragStart={event => onDragStart(event, wasteSource)}
+                                    onClick={e => handleCardTap(wasteSource, e)}
+                                    onDoubleClick={() => tryAutoFoundation(wasteSource)}
                                 >
                                     <div className="sol98-corner">{rankLabel(card.rank)}{card.suit}</div>
                                     <div className="sol98-center">{card.suit}</div>
@@ -293,6 +335,7 @@ const Solitaire: React.FC = () => {
                                 className="sol98-pile"
                                 onDragOver={event => event.preventDefault()}
                                 onDrop={event => onDropTo(event, { type: 'foundation', suit })}
+                                onClick={() => handlePileTap({ type: 'foundation', suit })}
                             >
                                 {topCard ? (
                                     <div className={`sol98-card sol98-card-${suitColor(topCard.suit)}`}>
@@ -314,24 +357,34 @@ const Solitaire: React.FC = () => {
                             className="sol98-pile sol98-pile-tableau"
                             onDragOver={event => event.preventDefault()}
                             onDrop={event => onDropTo(event, { type: 'tableau', pileIndex: columnIndex })}
+                            onClick={() => {
+                                if (column.length === 0) {
+                                    handlePileTap({ type: 'tableau', pileIndex: columnIndex });
+                                }
+                            }}
                         >
-                            {column.map((card, cardIndex) => (
-                                <div
-                                    key={`${card.suit}-${card.rank}`}
-                                    className={`sol98-card ${card.faceUp ? `sol98-card-${suitColor(card.suit)}` : 'sol98-card-back'}`}
-                                    style={{ top: `${cardIndex * 22}px`, zIndex: cardIndex }}
-                                    draggable={card.faceUp}
-                                    onDragStart={event => onDragStart(event, { type: 'tableau', pileIndex: columnIndex, cardIndex })}
-                                    onDoubleClick={() => card.faceUp && tryAutoFoundation({ type: 'tableau', pileIndex: columnIndex, cardIndex })}
-                                >
-                                    {card.faceUp && (
-                                        <>
-                                            <div className="sol98-corner">{rankLabel(card.rank)}{card.suit}</div>
-                                            <div className="sol98-center">{card.suit}</div>
-                                        </>
-                                    )}
-                                </div>
-                            ))}
+                            {column.map((card, cardIndex) => {
+                                const cardSource: DragSource = { type: 'tableau', pileIndex: columnIndex, cardIndex };
+                                const active = card.faceUp && isSelected(cardSource);
+                                return (
+                                    <div
+                                        key={`${card.suit}-${card.rank}`}
+                                        className={`sol98-card ${card.faceUp ? `sol98-card-${suitColor(card.suit)}` : 'sol98-card-back'} ${active ? 'sol98-card-selected' : ''}`}
+                                        style={{ top: `${cardIndex * 20}px`, zIndex: cardIndex }}
+                                        draggable={card.faceUp}
+                                        onDragStart={event => onDragStart(event, cardSource)}
+                                        onClick={e => card.faceUp && handleCardTap(cardSource, e)}
+                                        onDoubleClick={() => card.faceUp && tryAutoFoundation(cardSource)}
+                                    >
+                                        {card.faceUp && (
+                                            <>
+                                                <div className="sol98-corner">{rankLabel(card.rank)}{card.suit}</div>
+                                                <div className="sol98-center">{card.suit}</div>
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     ))}
                 </div>

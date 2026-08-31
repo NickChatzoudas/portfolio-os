@@ -684,6 +684,7 @@ const Pacman: React.FC = () => {
         <div className="pac98-wrap" ref={wrapRef} tabIndex={0} onKeyDown={handleKeyDown}>
             <div className="pac98-hud">
                 <span>Score: {score}</span>
+                <button onClick={startGame} className="pac98-restart">Restart</button>
                 {deathCountdown > 0 && <span className="pac98-countdown">{deathCountdown}</span>}
                 <div className="pac98-lives">
                     {Array.from({ length: lives }, (_, i) => (
@@ -709,8 +710,6 @@ const Pacman: React.FC = () => {
                     <button type="button" className="pac98-dpad-btn right" onClick={() => handleDPad('ArrowRight')} onTouchStart={(e) => { e.preventDefault(); handleDPad('ArrowRight'); }}>►</button>
                 </div>
             </div>
-
-            <button onClick={startGame} style={{ marginTop: '4px' }}>Restart</button>
         </div>
     );
 };

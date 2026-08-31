@@ -367,6 +367,10 @@ ul {
   transform: translateX(-50%);
 }
 
+.pac98-restart {
+  margin-left: 6px;
+}
+
 .pac98-life {
   display: inline-block;
   width: 12px;
